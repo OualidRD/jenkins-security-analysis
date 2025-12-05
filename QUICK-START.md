@@ -73,7 +73,7 @@ docker exec jenkins-security cat /var/jenkins_home/secrets/initialAdminPassword
 **Configuration:**
 - Definition: **Pipeline script from SCM**
 - SCM: **Git**
-- Repository URL: `file:///project`
+- Repository URL: `https://github.com/OualidRD/jenkins-security-analysis.git`
 - Script Path: `Jenkinsfile`
 - Save
 
