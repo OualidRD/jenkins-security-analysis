@@ -54,7 +54,6 @@ pipeline {
                 }
                 
                 sh '''
-                    # Créer venv si nécessaire
                     if [ ! -d "/var/jenkins_home/bandit-venv" ]; then
                         python3 -m venv /var/jenkins_home/bandit-venv
                         . /var/jenkins_home/bandit-venv/bin/activate
@@ -63,12 +62,12 @@ pipeline {
                         . /var/jenkins_home/bandit-venv/bin/activate
                     fi
                     
-                    echo "📂 Répertoire: $(pwd)"
-                    echo "🔍 Analyse SAST du code vulnérable..."
+                    echo "Running Bandit analysis on bad/ folder..."
+                    bandit -r bad -f html -o reports/bandit-bad.html 2>&1
+                    EXIT_CODE=$?
+                    echo "Bandit completed with exit code: $EXIT_CODE"
                     
-                    # Generate HTML report
-                    bandit -r bad -f html -o reports/bandit-bad.html
-                    echo "✅ Rapport HTML généré"
+                    ls -lh reports/bandit-bad.html
                 '''
             }
         }
@@ -86,11 +85,12 @@ pipeline {
                 sh '''
                     . /var/jenkins_home/bandit-venv/bin/activate
                     
-                    echo "🔍 Analyse SAST du code sécurisé..."
+                    echo "Running Bandit analysis on good/ folder..."
+                    bandit -r good -f html -o reports/bandit-good.html 2>&1
+                    EXIT_CODE=$?
+                    echo "Bandit completed with exit code: $EXIT_CODE"
                     
-                    # Generate HTML report
-                    bandit -r good -f html -o reports/bandit-good.html
-                    echo "✅ Rapport HTML généré"
+                    ls -lh reports/bandit-good.html
                 '''
             }
         }
