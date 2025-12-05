@@ -54,39 +54,21 @@ pipeline {
                 }
                 
                 sh '''
-                    set -x  # Mode debug
-                    
                     # Créer venv si nécessaire
                     if [ ! -d "/var/jenkins_home/bandit-venv" ]; then
-                        echo "📦 Création de l'environnement Bandit..."
                         python3 -m venv /var/jenkins_home/bandit-venv
                         . /var/jenkins_home/bandit-venv/bin/activate
-                        pip install bandit==1.8.6
+                        pip install -q bandit==1.8.6
+                    else
+                        . /var/jenkins_home/bandit-venv/bin/activate
                     fi
                     
-                    . /var/jenkins_home/bandit-venv/bin/activate
+                    echo "📂 Répertoire: $(pwd)"
+                    echo "🔍 Analyse SAST du code vulnérable..."
                     
-                    echo "📂 Répertoire courant: $(pwd)"
-                    echo "📂 Fichiers présents: $(ls -1)"
-                    
-                    echo ""
-                    echo "🔍 Analyse SAST du code vulnérable (bad/)..."
-                    
-                    # HTML report
-                    echo "Génération rapport HTML..."
-                    bandit -r bad -f html -o reports/bandit-bad.html 2>&1
-                    
-                    # JSON report (separate command to avoid stopping pipeline)
-                    echo "Génération rapport JSON..."
-                    bandit -r bad -f json -o reports/bandit-bad.json 2>&1 || echo "JSON generation failed but continuing..."
-                    
-                    # Summary
-                    echo "Résumé des résultats:"
-                    bandit -r bad -f txt 2>&1 | head -50 || true
-                    
-                    echo "✅ Analyse bad/ terminée"
-                    
-                    set +x  # Fin du mode debug
+                    # Generate HTML report
+                    bandit -r bad -f html -o reports/bandit-bad.html
+                    echo "✅ Rapport HTML généré"
                 '''
             }
         }
@@ -104,21 +86,11 @@ pipeline {
                 sh '''
                     . /var/jenkins_home/bandit-venv/bin/activate
                     
-                    echo "🔍 Analyse SAST du code sécurisé (good/)..."
+                    echo "🔍 Analyse SAST du code sécurisé..."
                     
-                    # HTML report
-                    echo "Génération rapport HTML..."
-                    bandit -r good -f html -o reports/bandit-good.html 2>&1
-                    
-                    # JSON report
-                    echo "Génération rapport JSON..."
-                    bandit -r good -f json -o reports/bandit-good.json 2>&1 || echo "JSON generation failed but continuing..."
-                    
-                    # Summary
-                    echo "Résumé des résultats:"
-                    bandit -r good -f txt 2>&1 | head -50 || true
-                    
-                    echo "✅ Analyse good/ terminée"
+                    # Generate HTML report
+                    bandit -r good -f html -o reports/bandit-good.html
+                    echo "✅ Rapport HTML généré"
                 '''
             }
         }
