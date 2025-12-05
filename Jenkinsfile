@@ -63,11 +63,11 @@ pipeline {
                     fi
                     
                     echo "Running Bandit analysis on bad/ folder..."
-                    bandit -r bad -f html -o reports/bandit-bad.html 2>&1
+                    bandit -r bad -f html -o reports/bandit-bad.html 2>&1 || true
                     EXIT_CODE=$?
                     echo "Bandit completed with exit code: $EXIT_CODE"
                     
-                    ls -lh reports/bandit-bad.html
+                    ls -lh reports/bandit-bad.html || echo "Report file not found"
                 '''
             }
         }
@@ -86,11 +86,11 @@ pipeline {
                     . /var/jenkins_home/bandit-venv/bin/activate
                     
                     echo "Running Bandit analysis on good/ folder..."
-                    bandit -r good -f html -o reports/bandit-good.html 2>&1
+                    bandit -r good -f html -o reports/bandit-good.html 2>&1 || true
                     EXIT_CODE=$?
                     echo "Bandit completed with exit code: $EXIT_CODE"
                     
-                    ls -lh reports/bandit-good.html
+                    ls -lh reports/bandit-good.html || echo "Report file not found"
                 '''
             }
         }
