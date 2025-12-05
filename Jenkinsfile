@@ -64,22 +64,28 @@ pipeline {
                     
                     . /var/jenkins_home/bandit-venv/bin/activate
                     
-                    cd /project
+                    # Afficher le répertoire courant
+                    echo "📂 Répertoire courant: $(pwd)"
+                    echo "📂 Fichiers présents:"
+                    ls -la
                     
+                    echo ""
                     echo "🔍 Analyse du code vulnérable (bad/)..."
                     
                     # Analyse détaillée en HTML
-                    bandit -r bad -f html -o ${WORKSPACE}/reports/bandit-bad.html
-                    
-                    # Analyse en JSON pour traitement
-                    bandit -r bad -f json -o ${WORKSPACE}/reports/bandit-bad.json
+                    if [ -d "bad" ]; then
+                        bandit -r bad -f html -o reports/bandit-bad.html
+                        bandit -r bad -f json -o reports/bandit-bad.json || true
+                        echo "✅ Rapport HTML: reports/bandit-bad.html"
+                    else
+                        echo "❌ Dossier bad/ non trouvé!"
+                        ls -la bad/ 2>&1 || echo "Erreur: bad/ n'existe pas"
+                    fi
                     
                     # Affichage dans la console
                     echo ""
                     echo "📋 Résumé Bandit (bad/):"
                     bandit -r bad -f screen || true
-                    
-                    echo "✅ Rapport HTML: reports/bandit-bad.html"
                 '''
             }
         }
@@ -97,18 +103,19 @@ pipeline {
                 sh '''
                     . /var/jenkins_home/bandit-venv/bin/activate
                     
-                    cd /project
-                    
                     echo "🔍 Analyse du code corrigé (good/)..."
                     
-                    bandit -r good -f html -o ${WORKSPACE}/reports/bandit-good.html
-                    bandit -r good -f json -o ${WORKSPACE}/reports/bandit-good.json
+                    if [ -d "good" ]; then
+                        bandit -r good -f html -o reports/bandit-good.html
+                        bandit -r good -f json -o reports/bandit-good.json || true
+                        echo "✅ Rapport HTML: reports/bandit-good.html"
+                    else
+                        echo "❌ Dossier good/ non trouvé!"
+                    fi
                     
                     echo ""
                     echo "📋 Résumé Bandit (good/):"
                     bandit -r good -f screen || true
-                    
-                    echo "✅ Rapport HTML: reports/bandit-good.html"
                 '''
             }
         }
@@ -324,16 +331,7 @@ pipeline {
             
             // Archiver tous les rapports
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
-            
-            // Publier les rapports HTML
-            publishHTML([
-                reportDir: 'reports',
-                reportFiles: 'bandit-bad.html, bandit-good.html',
-                reportName: '📊 Rapports SAST + SCA',
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true
-            ])
+        }
         }
         
         success {
