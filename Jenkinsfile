@@ -332,7 +332,6 @@ pipeline {
             // Archiver tous les rapports
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
         }
-        }
         
         success {
             script {
